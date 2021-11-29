@@ -29,6 +29,9 @@ import org.apache.jena.sparql.util.Symbol ;
 import org.apache.jena.sys.JenaSystem ;
 import org.apache.jena.util.Metadata;
 
+// Need something like this (or this already covered by existing geosparql?)
+// Also need jena-text/src/main/resources/META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle ?
+
 public class TextQuery
 {
     private static volatile boolean initialized = false ;
@@ -75,5 +78,3 @@ public class TextQuery
         }
     }
 }
-
-

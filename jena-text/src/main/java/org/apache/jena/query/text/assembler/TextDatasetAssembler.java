@@ -39,6 +39,8 @@ import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.util.ClsLoader ;
 import org.apache.jena.sparql.util.graph.GraphUtils ;
 
+// This needs to wrap the provided dataset in a geosparql-enabled one (with optional extra config)
+
 public class TextDatasetAssembler extends AssemblerBase implements Assembler
 {
     public static Resource getType() { return textDataset ; }
@@ -97,4 +99,3 @@ public class TextDatasetAssembler extends AssemblerBase implements Assembler
     }
 
 }
-

@@ -23,11 +23,14 @@ import org.apache.jena.sparql.core.assembler.AssemblerUtils ;
 
 public class TextAssembler
 {
+
+    // Create minimal one of these - will have to be called explicitly
+
     public static void init()
     {
         AssemblerUtils.init() ;
         AssemblerUtils.registerDataset(TextVocab.textDataset,      new TextDatasetAssembler()) ;
-        
+
         Assembler.general.implementWith(TextVocab.entityMap,        new EntityDefinitionAssembler()) ;
         Assembler.general.implementWith(TextVocab.textIndexLucene,  new TextIndexLuceneAssembler()) ;
         Assembler.general.implementWith(TextVocab.standardAnalyzer, new StandardAnalyzerAssembler()) ;
@@ -43,4 +46,3 @@ public class TextAssembler
 
     }
 }
-

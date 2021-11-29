@@ -22,6 +22,8 @@ import org.apache.jena.rdf.model.Property ;
 import org.apache.jena.rdf.model.Resource ;
 import org.apache.jena.tdb.assembler.Vocab ;
 
+// Create minmal one of these, with just NS, dataset (& index?) props
+
 public class TextVocab
 {
     public static final String NS                   =  "http://jena.apache.org/text#" ;
@@ -122,4 +124,3 @@ public class TextVocab
     public static final Property pPropListProp      = Vocab.property(NS, "propListProp");
     public static final Property pProps             = Vocab.property(NS, "props");
 }
-
