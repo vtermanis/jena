@@ -50,11 +50,51 @@
       <version>2.3.1</version>
     </dependency>
 
+    <!-- All Jena libs (not Fuseki) -->
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-arq</artifactId>
+      <artifactId>apache-jena-libs</artifactId>
       <version>4.2.0</version>
+      <type>pom</type>
     </dependency>
+
+    <dependency>
+      <groupId>io.github.galbiston</groupId>
+      <artifactId>rdf-tables</artifactId>
+      <version>1.0.4</version>
+      <exclusions>
+          <exclusion>
+              <groupId>org.apache.jena</groupId>
+              <artifactId>jena-tdb</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.jena</groupId>
+              <artifactId>jena-tdb2</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+          </exclusion>
+        </exclusions>
+  </dependency>
+
+    <!--
+      io.github.galbiston.rdf-tables indirectly uses:
+      - commons-beanutils:commons-beanutils 1.9.3
+
+      .. but org.apache.shiro:shiro-core 1.8.0 indirectly uses 1.9.4 of the above
+      .. so switch to opencsv 3.10 instead (indirect dep previously picks 3.9)
+    -->
+
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.9.4</version>
+  </dependency>
 
     <dependency>
       <groupId>org.apache.sis.core</groupId>
@@ -101,7 +141,7 @@
 
   <profiles>
     <!-- Tests: Java8 only
-         A change in the doubles is current resulting in 
+         A change in the doubles is current resulting in
          test failures on precision but the test is string based
          of WKT.
     -->
@@ -109,10 +149,10 @@
       <id>java-after-8</id>
       <activation>
         <jdk>[1.9,)</jdk>
-      </activation>      
+      </activation>
     </profile>
   </profiles>
-  
+
   <build>
 
     <plugins>

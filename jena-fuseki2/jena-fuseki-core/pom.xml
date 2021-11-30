@@ -37,6 +37,14 @@
 
     <dependency>
       <groupId>org.apache.jena</groupId>
+      <artifactId>jena-geosparql</artifactId>
+      <version>4.2.0</version>
+      <!-- TODO - pom or not? -->
+      <type>pom</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
       <artifactId>apache-jena-libs</artifactId>
       <version>4.2.0</version>
       <type>pom</type>
@@ -156,7 +164,7 @@
               <Automatic-Module-Name>${automatic.module.name}</Automatic-Module-Name>
             </manifestEntries>
           </archive>
-        </configuration> 
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -165,7 +173,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
