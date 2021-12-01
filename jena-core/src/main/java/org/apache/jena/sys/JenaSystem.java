@@ -47,7 +47,7 @@ public class JenaSystem {
      * initialization. Output to {@code System.err}, not a logger
      * to avoid the risk of recursive initialization.
      */
-    public static boolean DEBUG_INIT = false ;
+    public static boolean DEBUG_INIT = true ;
 
     // A correct way to manage without synchonized using the double checked locking pattern.
     //   http://en.wikipedia.org/wiki/Double-checked_locking
