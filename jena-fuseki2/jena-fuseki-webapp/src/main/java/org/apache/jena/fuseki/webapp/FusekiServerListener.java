@@ -18,17 +18,27 @@
 
 package org.apache.jena.fuseki.webapp;
 
+import java.util.function.Function;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.FusekiException;
+import org.apache.jena.fuseki.access.AccessCtl_Deny;
+import org.apache.jena.fuseki.access.AccessCtl_GSP_R;
+import org.apache.jena.fuseki.access.AccessCtl_SPARQL_QueryDataset;
+import org.apache.jena.fuseki.access.DataAccessCtl;
 import org.apache.jena.fuseki.cmd.FusekiArgs;
 import org.apache.jena.fuseki.metrics.MetricsProviderRegistry;
 import org.apache.jena.fuseki.server.DataAccessPointRegistry;
+import org.apache.jena.fuseki.server.Endpoint;
 import org.apache.jena.fuseki.server.FusekiInfo;
+import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.server.OperationRegistry;
+import org.apache.jena.fuseki.servlets.ActionService;
+import org.apache.jena.fuseki.servlets.HttpAction;
 import org.slf4j.Logger;
 
 /** Setup configuration.
@@ -97,9 +107,16 @@ public class FusekiServerListener implements ServletContextListener {
             FusekiWebapp.initializeDataAccessPoints(dataAccessPointRegistry,
                                                     initialSetup,
                                                     FusekiWebapp.dirConfiguration.toString());
+
             dataAccessPointRegistry.forEach((name, dap)->{
                 dap.getDataService().setEndpointProcessors(operationRegistry);
                 dap.getDataService().goActive();
+                dap.getDataService().forEachEndpoint(ep->{
+                    // Override for graph-level access control.
+                    if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
+                        modifyForAccessCtl(ep, DataAccessCtl.requestUserServlet);
+                    }
+                });
                 //Fuseki.configLog.info("Register: "+dap.getName());
             });
         } catch (Throwable th) {
@@ -132,5 +149,24 @@ public class FusekiServerListener implements ServletContextListener {
         FusekiInfo.logServerSetup(log, initialSetup.verbose,
                                   dapRegistry,
                                   datasetPath, datasetDescription, serverConfigFile, null);
+    }
+
+    /**
+     * Modify in-place existing an {@link Endpoint} so that the read-operations for
+     * query/GSP/Quads go to the data-filtering versions of the {@link ActionService ActionServices}.
+     * Any other operations are replaced with "access denied".
+     */
+    private static void modifyForAccessCtl(Endpoint endpoint, Function<HttpAction, String> determineUser) {
+        endpoint.setProcessor( controlledProc(endpoint.getOperation(), determineUser));
+    }
+
+    private static ActionService controlledProc(Operation op, Function<HttpAction, String> determineUser) {
+        if ( Operation.Query.equals(op) )
+            return new AccessCtl_SPARQL_QueryDataset(determineUser);
+       if ( Operation.GSP_R.equals(op) )
+           return new AccessCtl_GSP_R(determineUser);
+       if ( Operation.GSP_RW.equals(op) )
+           return new AccessCtl_GSP_R(determineUser);
+       return new AccessCtl_Deny("Not supported for graph level access control: "+op.getDescription());
     }
 }

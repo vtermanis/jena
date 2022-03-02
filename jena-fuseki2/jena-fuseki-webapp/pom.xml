@@ -39,24 +39,30 @@
 
     <dependency>
       <groupId>org.apache.jena</groupId>
+      <artifactId>jena-fuseki-access</artifactId>
+      <version>4.3.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-core</artifactId>
       <version>4.3.2</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-cmds</artifactId>
       <version>4.3.2</version>
     </dependency>
-   
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-text</artifactId>
       <version>4.3.2</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
@@ -72,7 +78,7 @@
       <artifactId>shiro-web</artifactId>
     </dependency>
 
-    <!-- Logging  -->  
+    <!-- Logging  -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
