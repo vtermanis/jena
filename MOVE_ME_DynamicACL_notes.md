@@ -25,7 +25,7 @@ Since this proposal is generic in nature (and only a small extension to the exis
 
 - Why not implemented this in [Jena Permissions](https://jena.apache.org/documentation/permissions/evaluator.html)? Because right now it can reason about individual graphs/models, not whole datasets. In addition this is expected to not perform as well as Fuseki ACL, which uses TDB hooks. (See also previous discussion [here](https://jena.markmail.org/thread/d44ecdeyn4dnspgx).)
 
-- Who not implement this is a query-rewrite, applying a set of `FROM` clauses to restrict visibility? This would require parsing of the input query (or modification of the generated `Query` object) and from limited testing, a large set of FROM clauses does not perform very well. (See same discussion as in above bullet point.)
+- Why not implement this is a query-rewrite, applying a set of `FROM` clauses to restrict visibility? This would require parsing of the input query (or modification of the generated `Query` object) and from limited testing, a large set of FROM clauses does not perform very well. (See same discussion as in above bullet point.)
 
 ## How
 
@@ -45,7 +45,7 @@ Since this proposal is generic in nature (and only a small extension to the exis
    }
    ```
     - **Note**: An invalid or missing `#pragma` or one without any graphs specified all result in no graphs being visible.
-    - Why does the proposal read the set of allowed graphs from a preamble/comment in the query rather than either an HTTP header or a URL parameter? Because both of these have fairly low maximum size expectations (by REST servers) such that it's not feasible to store 100s or graph URIs in them.
+    - Why does the proposal read the set of allowed graphs from a preamble/comment in the query rather than either an HTTP header or a URL parameter? Because both of these have fairly low maximum size expectations (by REST servers) such that it's not feasible to store 100s of graph URIs in them.
 
 3. When the query is executed, access is restricted to the previously provided set of graphs
     - **Note**: The dynamic behaviour only applies to SPARQL queries, not [GSP](https://www.w3.org/TR/sparql11-http-rdf-update). If a GSP request is made, no graphs are visible.
@@ -55,7 +55,7 @@ Since this proposal is generic in nature (and only a small extension to the exis
 1. A new `SecurityContext` implementation, `SecurityContextDynamic`, acts as the marker to indicate that the visible graphs should be chosen from the query preamble.
     - `AssemblerSecurityRegistry` detects this new mode and choose the `SecurityContext` accordingly.
 
-2. When a SPARQL query hits `AccessCtl_SPARQL_QueryDataset, the raw query string (and thus preamble/comments) is stored in the `HttpAction`'s context.
+2. When a SPARQL query hits `AccessCtl_SPARQL_QueryDataset`, the raw query string (and thus `#pragma`) are stored in the `HttpAction`'s context.
 
 3. If (based on user) the determined security context is dynamic, the query is parsed to construct a new `SecurityContextView` with the set of chosen graphs.
 
