@@ -19,6 +19,8 @@
 package org.apache.jena.fuseki.access;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.apache.jena.graph.Node;
@@ -68,6 +70,16 @@ public class TestSecurityRegistry {
             Node x = sCxt.visibleGraphs().stream().findFirst().get();
             assertEquals(SecurityContext.allGraphs, x);
         }
+
+        {
+            SecurityContext sCxt = authService.get("user4");
+            assertTrue(sCxt instanceof SecurityContextDynamic);
+            // In dynamic mode, the security context forbids everything
+            assertFalse(sCxt.visableDefaultGraph());
+            assertEquals(0, sCxt.visibleGraphs().size());
+        }
+
+        // TODO - one more with non-dynamic (user 5)
 
         {
             SecurityContext sCxt = authService.get("*");
