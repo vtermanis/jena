@@ -1,0 +1,62 @@
+# Proposal: Extension to jena-fuseki-access to support dynamic ACL
+
+## What
+
+`jena-fuseki-access` already offers the means to restrict graph visibility in a dataset on a per-user basis, configurable in Fuseki on startup (or whenever a new dataset is added).
+This proposal:
+
+1. Includes a new "dynamic" visibility restriction such that the set of visible graphs can be chosen on a per-query basis
+2. Has no impact on existing ACL functionality
+3. Defaults to "no graph visibility"
+3. Is designed for intermediate (rather than end-user) applications (see "Why" below.)
+
+## Why
+
+A use-case we're exploring models metadata as many small individual graphs, each with a handful or related subjects and their properties. The aim is to allow our users to query said metadata via SPARQL whilst restricting visibility to a subset of all graphs. The set of users, graphs stored and associated ACLs are dynamic in nature and not a good fit for the current fixed configuration model.
+In our use-case, we can calculate the set of "allowed" graphs at the time a user requests to run a SPARQL query and thus can supply the ACL to Fuseki on a per-query basis.
+
+Since this proposal is generic in nature (and only a small extension to the existing `jena-fuseki-access` module), we'd like to gauge:
+
+1. Is a useful extension that the Jena Community would consider for inclusion in upcoming releases?
+2. Are better ways to support such a feature?
+3. Are there any other concerns/considerations/question beyond what is documented here and in the accompanied PR?
+
+### Alternatives
+
+- Why not implemented this in [Jena Permissions](https://jena.apache.org/documentation/permissions/evaluator.html)? Because right now it can reason about individual graphs/models, not whole datasets. In addition this is expected to not perform as well as Fuseki ACL, which uses TDB hooks. (See also previous discussion [here](https://jena.markmail.org/thread/d44ecdeyn4dnspgx).)
+
+- Who not implement this is a query-rewrite, applying a set of `FROM` clauses to restrict visibility? This would require parsing of the input query (or modification of the generated `Query` object) and from limited testing, a large set of FROM clauses does not perform very well. (See same discussion as in above bullet point.)
+
+## How
+
+### High-level flow
+
+1. The (ACL-enabled) target dataset is assigned a user which enables the new dynamic behaviour, i.e.:
+    ```turtle
+    access:entry ("theUser" <urn:jena:accessGraphsDynamic>) ;
+    ```
+    - **Note**: If there is more than one graph listed, the user behaves like before, i.e. dynamic mode is not enabled.
+
+2. Any SPARQL queries made by `theUser` can (optionally) have the following comment added to allow visibility of a given set of graphs (here `graph:one`, `graph:two` and `graph:three`):
+   ```sparql
+   #pragma acl.graphs graph:one|graph:two|graph:three
+   SELECT * WHERE {
+      ...
+   }
+   ```
+    - **Note**: An invalid or missing `#pragma` or one without any graphs specified all result in no graphs being visible.
+    - Why does the proposal read the set of allowed graphs from a preamble/comment in the query rather than either an HTTP header or a URL parameter? Because both of these have fairly low maximum size expectations (by REST servers) such that it's not feasible to store 100s or graph URIs in them.
+
+3. When the query is executed, access is restricted to the previously provided set of graphs
+    - **Note**: The dynamic behaviour only applies to SPARQL queries, not [GSP](https://www.w3.org/TR/sparql11-http-rdf-update). If a GSP request is made, no graphs are visible.
+
+### Technical summary
+
+1. A new `SecurityContext` implementation, `SecurityContextDynamic`, acts as the marker to indicate that the visible graphs should be chosen from the query preamble.
+    - `AssemblerSecurityRegistry` detects this new mode and choose the `SecurityContext` accordingly.
+
+2. When a SPARQL query hits `AccessCtl_SPARQL_QueryDataset, the raw query string (and thus preamble/comments) is stored in the `HttpAction`'s context.
+
+3. If (based on user) the determined security context is dynamic, the query is parsed to construct a new `SecurityContextView` with the set of chosen graphs.
+
+4. Thereafter execution and ACL guarantees are the same as for pre-existing ACL functionality
