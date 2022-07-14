@@ -18,6 +18,8 @@
 
 package org.apache.jena.fuseki.access;
 
+import java.util.Collection;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -79,7 +81,16 @@ public class TestSecurityRegistry {
             assertEquals(0, sCxt.visibleGraphs().size());
         }
 
-        // TODO - one more with non-dynamic (user 5)
+        {
+            SecurityContext sCxt = authService.get("user5");
+            // Use has dynamic mode marker, but other graphs also specified => no dynamic mode
+            assertFalse(sCxt instanceof SecurityContextDynamic);
+            assertFalse(sCxt.visableDefaultGraph());
+            assertEquals(2, sCxt.visibleGraphs().size());
+            Collection<String> graphNames = sCxt.visibleGraphNames();
+            assertTrue(graphNames.contains("http://host/graphname2"));
+            assertTrue(graphNames.contains("urn:jena:accessGraphsDynamic"));
+        }
 
         {
             SecurityContext sCxt = authService.get("*");
