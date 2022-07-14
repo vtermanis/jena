@@ -37,17 +37,20 @@ Since this proposal is generic in nature (and only a small extension to the exis
     ```
     - **Note**: If there is more than one graph listed, the user behaves like before, i.e. dynamic mode is not enabled.
 
-2. Any SPARQL queries made by `theUser` can (optionally) have the following comment added to allow visibility of a given set of graphs (here `graph:one`, `graph:two` and `graph:three`):
+2. A service/proxy (i.e. something intermediate leveraging Fuseki) receives a SPARQL request and based on it's understanding of users/roles/other calculates the set of visible graphs.
+
+3. The SPARQL query, run as Fuseki user `theUser`, is prefixed with the calculated set of visible graphs (here `graph:one`, `graph:two` and `graph:three`):
    ```sparql
    #pragma acl.graphs graph:one|graph:two|graph:three
    SELECT * WHERE {
       ...
    }
    ```
-    - **Note**: An invalid or missing `#pragma` or one without any graphs specified all result in no graphs being visible.
+    - **Note**: An invalid or missing `#pragma` or one without any graphs specified will result in no graphs being visible.
+    - End-users are of course not meant to be directly authenticating as `theUser` in this dynamic mode.
     - Why does the proposal read the set of allowed graphs from a preamble/comment in the query rather than either an HTTP header or a URL parameter? Because both of these have fairly low maximum size expectations (by REST servers) such that it's not feasible to store 100s of graph URIs in them.
 
-3. When the query is executed, access is restricted to the previously provided set of graphs
+4. When the query is executed, access is restricted to the previously provided set of graphs
     - **Note**: The dynamic behaviour only applies to SPARQL queries, not [GSP](https://www.w3.org/TR/sparql11-http-rdf-update). If a GSP request is made, no graphs are visible.
 
 ### Technical summary
